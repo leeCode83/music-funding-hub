@@ -17,29 +17,29 @@ const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <NavLink 
-              to="/" 
+            <NavLink
+              to="/"
               className="text-foreground/70 hover:text-foreground transition-colors"
               activeClassName="text-foreground font-medium"
             >
               Home
             </NavLink>
-            <NavLink 
-              to="/tokenization" 
+            <NavLink
+              to="/tokenization"
               className="text-foreground/70 hover:text-foreground transition-colors"
               activeClassName="text-foreground font-medium"
             >
               Tokenization
             </NavLink>
-            <NavLink 
-              to="/marketplace" 
+            <NavLink
+              to="/marketplace"
               className="text-foreground/70 hover:text-foreground transition-colors"
               activeClassName="text-foreground font-medium"
             >
               Marketplace
             </NavLink>
-            <NavLink 
-              to="/dashboard" 
+            <NavLink
+              to="/dashboard"
               className="text-foreground/70 hover:text-foreground transition-colors"
               activeClassName="text-foreground font-medium"
             >
