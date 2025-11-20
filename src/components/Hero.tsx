@@ -1,14 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
-import { useEffect, useRef } from "react";
+import { ArrowRight, Play, Pause } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import MusicParticles from "./MusicParticles";
+import { AudioAnalyzer } from "@/utils/audioAnalyzer";
 
 const Hero = () => {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const subheadingRef = useRef<HTMLParagraphElement>(null);
   const buttonsRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const analyzerRef = useRef<AudioAnalyzer | null>(null);
+  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioData, setAudioData] = useState<Uint8Array>(new Uint8Array(0));
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -38,17 +44,63 @@ const Hero = () => {
     return () => ctx.revert();
   }, []);
 
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      if (analyzerRef.current) {
+        analyzerRef.current.cleanup();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const updateAudioData = () => {
+      if (analyzerRef.current) {
+        const data = analyzerRef.current.getFrequencyData();
+        setAudioData(data);
+      }
+      requestAnimationFrame(updateAudioData);
+    };
+
+    updateAudioData();
+  }, [isPlaying]);
+
+  const toggleAudio = async () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      if (!analyzerRef.current) {
+        analyzerRef.current = new AudioAnalyzer();
+        await analyzerRef.current.initialize(audioRef.current);
+      }
+      
+      try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Error playing audio:', error);
+      }
+    }
+  };
+
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src={heroBg} 
-          alt="Music Finance Platform" 
-          className="w-full h-full object-cover"
-        />
-        <div ref={overlayRef} className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/90 to-primary/80" />
-      </div>
+      {/* 3D Particle Background */}
+      <MusicParticles audioData={audioData} />
+      <div ref={overlayRef} className="absolute inset-0 bg-gradient-to-br from-primary/60 via-primary/50 to-primary/40 z-[1]" />
+      
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+        loop
+        crossOrigin="anonymous"
+      />
 
       {/* Content */}
       <div className="container relative z-10 mx-auto px-4 py-20">
@@ -75,6 +127,24 @@ const Hero = () => {
               className="w-full sm:w-auto min-w-[240px]"
             >
               Explore Marketplace
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              onClick={toggleAudio}
+              className="w-full sm:w-auto min-w-[180px]"
+            >
+              {isPlaying ? (
+                <>
+                  <Pause className="mr-2 h-5 w-5" />
+                  Pause Music
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-5 w-5" />
+                  Play Music
+                </>
+              )}
             </Button>
           </div>
         </div>
