@@ -1,7 +1,7 @@
 export class AudioAnalyzer {
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
-  private dataArray: Uint8Array | null = null;
+  private dataArray: Uint8Array<ArrayBuffer> | null = null;
   private source: MediaElementAudioSourceNode | null = null;
 
   async initialize(audioElement: HTMLAudioElement) {
@@ -11,7 +11,7 @@ export class AudioAnalyzer {
       this.analyser.fftSize = 256;
       
       const bufferLength = this.analyser.frequencyBinCount;
-      this.dataArray = new Uint8Array(bufferLength);
+      this.dataArray = new Uint8Array(new ArrayBuffer(bufferLength));
 
       this.source = this.audioContext.createMediaElementSource(audioElement);
       this.source.connect(this.analyser);
@@ -29,7 +29,7 @@ export class AudioAnalyzer {
       return new Uint8Array(0);
     }
     this.analyser.getByteFrequencyData(this.dataArray);
-    return new Uint8Array(this.dataArray.buffer.slice(0));
+    return this.dataArray;
   }
 
   cleanup() {
